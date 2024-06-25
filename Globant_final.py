@@ -85,7 +85,7 @@ def normalize_review_count(df):
     return df
 
 def normalize_and_explode_sizes(df):
-    # Explode y limpieza básica de la columna size
+    # Explode de la columna 'total_sizes' y limpieza básica de la columna 'size'
     df = df.withColumn("size", explode(col("total_sizes")))
     df = df.withColumn("size", trim(regexp_replace(col("size"), r'\s+', '')))
     df = df.withColumn("size", regexp_replace(col("size"), r'\(.*?\)', ''))
@@ -95,27 +95,44 @@ def normalize_and_explode_sizes(df):
     df = df.withColumn("size_number", regexp_extract(col("size"), r"(\d+)", 1).cast(IntegerType()))
     df = df.withColumn("size_letter", regexp_extract(col("size"), r"([a-zA-Z]+)$", 1))
 
-    # Verificar si el tamaño está disponible
+    # Verificación de la disponibilidad del tamaño
     df = df.withColumn("is_available", when(array_contains(col("available_size"), col("size")), 1).otherwise(0))
+
+    # Definición de la columna 'is_not_bras' para las condiciones excluyentes
+    df = df.withColumn(
+        "is_not_bras",
+        when(col("size").rlike("(?i)^[SMLXLXXL]+$"), 1)
+        .when(col("size").rlike("(?i)^[6789]+$"), 1)
+        .when(col("size").rlike("(?i)^[A-Z]+$"), 1)
+        .otherwise(0)
+    )
+
+    # Filtrar los tamaños excluyentes
+    df = df.filter(col("is_not_bras") == 0)
 
     # Condiciones de clasificación basadas únicamente en 'size'
     size_conditions = [
-        # Grupos de tamaño basados en underbust size
         (col("size_number").between(30, 32), "Small"),
         (col("size_number").between(34, 36), "Medium"),
         (col("size_number").between(38, 40), "Large"),
         (col("size_number").between(42, 46), "Extra Large"),
-        
-        # No bras
-        (col("size").rlike("(?i)^[SMLXLXXL]+$"), "Not Bras"),  # Ejemplo: S, M, L, XL, XXL, ...
-        (col("size").rlike("(?i)^[6789]+$"), "Not Bras"),  # Ejemplo: 6, 7, 8, 9, ...
-        (col("size").rlike("(?i)^[A-Z]+$"), "Not Bras")  # Ejemplo: A, B, C, D, ...
+        (col("size").rlike("(?i)^1[0-2]$"), "Medium"),
+        (col("size").rlike("(?i)^[1-9]$"), "Small"),
+        (col("size").rlike("(?i)^1[0-4]$"), "Medium"),
+        (col("size").rlike("(?i)^[2-4][0-6]Plus$"), "Extra Large"),
+        (col("size").rlike("(?i)^1X(Apparel|Plus)?$"), "Extra Large"),
+        (col("size").rlike("(?i)^2X(Apparel|Plus)?$"), "Extra Large"),
+        (col("size").rlike("(?i)^3X(Apparel|Plus)?$"), "Extra Large"),
+        (col("size").rlike("(?i)^Womens?X(Large)?\d*$"), "Extra Large"),
+        (col("size") == "48H", "Extra Large")
     ]
 
+    # Asignar grupo de tamaño y eliminar filas con 'size_group' == "Unknown"
     df = df.withColumn(
         "size_group",
         coalesce(*[when(cond, group) for cond, group in size_conditions], lit("Unknown"))
     )
+    df = df.filter(col("size_group") != "Unknown")
     
     return df
 
@@ -325,17 +342,6 @@ def process_data():
     for table, path in output_paths.items():
         print(f"Archivo CSV de {table} exportado a: {path}")
         
-    # Identificar tallas fuera de los grupos predefinidos
-    predefined_groups = ["Small", "Medium", "Large", "Extra Large", "Unknown", 
-                         "XXS", "XS", "S", "M", "L", "XL", "XXL", "true", 
-                         "XLarge", "2426Plus", "1XPlus", "1XApparel", 
-                         "2XApparel", "3XApparel", "false", "OK"]
-    
-    unique_sizes = df_filtered.select("size_group").distinct()
-    unusual_sizes = unique_sizes.filter(~col("size_group").isin(predefined_groups))
-    
-    unusual_sizes.show(truncate=False)
-
 # Ejecutar el procesamiento de datos
 process_data()
 
