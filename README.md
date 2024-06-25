@@ -1,10 +1,9 @@
 CONCLUSIONES:
 
-1. Porcentaje de Disponibilidad (41.23%): Este indicador muestra que el 41.23% de los productos listados están actualmente disponibles para la compra.
-Este es un dato crucial para evaluar la eficiencia del manejo de inventario.
+Desbalance en la Disponibilidad de Tamaños: La categoría de tamaño "Medium" domina el inventario con un 44.2%, mientras que "Extra Large" solo constituye el 6.12%, lo que podría indicar una discrepancia entre la oferta y la demanda potencial en los extremos del espectro de tamaños.
 
-2."No Bras" constituyen una parte notable del inventario disponible. Esto sugiere que la empresa maneja una diversidad de productos más allá de los bras.
+Incidencia de Sanciones en Retailers: Victoria's Secret US muestra un volumen significativo de sanciones comparado con otros retailers, sugiriendo posibles desafíos en la gestión de inventario o en el cumplimiento de políticas de disponibilidad para bras "Extra Large".
 
-3. lace es el material que mas usado en los poductos.
-4. 
-5. podemos pensar que no hay mucho extra-large por la alta demanda y parte del pastel muesta que small posseuna gran parte puede ser por una alta demanda o poco movida de compra.
+Preferencia por Materiales Específicos: El material "Lace" y "adjustable" es predominante, representando el 30% y 38% del total de bras, lo que refleja una fuerte preferencia del mercado o una estrategia de producto focalizada en este material por su popularidad o características deseables como la durabilidad y el confort.
+
+
